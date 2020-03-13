@@ -86,6 +86,30 @@ spec:
       priorityClassName: {{ .Values.server.priorityClassName | quote }}
       {{- end }}
       containers:
+        - name: consul-exporter
+          image: "prom/consul-exporter:v0.4.0"
+          imagePullPolicy: IfNotPresent
+          command: ["consul_exporter"]
+          args: [
+            "--consul.server=localhost:8500",
+          ]
+          ports:
+            - name: exporter
+              containerPort: 9107
+          livenessProbe:
+            httpGet:
+              path: /
+              port: exporter
+            initialDelaySeconds: 30
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: exporter
+            initialDelaySeconds: 30
+            timeoutSeconds: 10
+          resources:
+            {}
         - name: consul
           image: "{{ default .Values.global.image .Values.server.image }}"
           env:
